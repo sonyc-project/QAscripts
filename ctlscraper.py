@@ -1,3 +1,5 @@
+## TODO: package as 2 classes, deployment and sensordetails
+
 import sys
 # adding sonycctl to system path
 sys.path.insert(0, '~/Documents/sonyc/sonycctl')
@@ -34,6 +36,7 @@ api.login()
 #     print('---')
 #     pp.pprint(deploymentStatus)
 #     return sensorStatus, deploymentStatus
+
 
 def sensorCheck(deployment_id):
     status = api.status(deployment_id, start='now-30s')
@@ -89,14 +92,7 @@ def sensorCheck(deployment_id):
 sensorCheck(deploy_id)
 
 """
-|| checking SPL levels specifically
-    - (optional) check whether SPL levels are within range (could also do this with api.status or api.deploy.info)
-"""
-spl = api.spl(deploy_id,start = 'now-1m')
-# pp.pprint(len(spl))
-
-"""
-|| checking deployment info
+|| [DONE] checking deployment info
     - is there a title?
     - is life_stage active?
 """
