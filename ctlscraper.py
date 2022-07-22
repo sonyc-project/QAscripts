@@ -4,7 +4,7 @@ sys.path.insert(0, '~/Documents/sonyc/sonycctl')
 import sonycctl
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-
+import numpy as np
 """
 || choosing sensor
     - will want to be able to use fqdn instead of deployment_id
@@ -19,20 +19,48 @@ api.login()
 
 """
 || checking status of sensor 
-    - is mic connected? DONE
-    - is cell hat connected? (is there ppp0/cell_connected=True?)
-    - is there an IP address?
-    - is signal strength good? (above 85%?)
-    - are disk levels good? (tmp_usage, root_usage, varlog_usage) DONE
-    - is laeq within range? (~50-60dB) DONE
+    - [DONE] is mic connected? 
+    - [DONE] is cell hat connected? (is there ppp0/cell_connected=True?)
+    - [DONE] is there an IP address? (wlan0_ip)
+    - [DONE] is signal strength good? (cell_strength - above 85%?)
+    - [DONE] are disk levels good? (tmp_usage, root_usage, varlog_usage)
+    - [DONE] is laeq within range? (~50-60dB)
 
 """
+# def pullData(deployment_id):
+#     sensorStatus = api.status(deployment_id, start='now-10s') #sensor data
+#     deploymentStatus = api.deploy.info(deployment_id) #deployment data
+#     pp.pprint(sensorStatus)
+#     print('---')
+#     pp.pprint(deploymentStatus)
+#     return sensorStatus, deploymentStatus
+
 def sensorCheck(deployment_id):
     status = api.status(deployment_id, start='now-30s')
     s = status[-1]
-    # print(s)
+    # pp.pprint(s)
 
-    #--CHECK DISK LEVELS:
+    #-- CHECK CELL CONNECTION:
+    if s['cell_connected'] and s['ppp0_ip']:
+        print(f"GOOD || Cell Hat USB connected & online")
+    elif s['cell_connected'] and not s['ppp0_ip']:
+        print(f"Error: Cell Hat USB connection detected, but no cell internet connection, is there a sim card?")
+    else:
+        print(f"Error: Cell Hat USB not connected")
+
+    #-- CHECK CELL_STRENGTH:
+    if np.abs(s['cell_strength']) > 85:
+        print(f"GOOD || CELL STRENGTH: {np.abs(s['cell_strength'])}%")
+    else:
+        print(f"Error: Bad cell strength {np.abs(s['cell_strength'])}%")
+
+    #-- CHECK IP ADDRESS:
+    if s['wlan0_ip']:
+        print(f"GOOD || IP ADDRESS: {s['wlan0_ip']}")
+    else:
+        print(f"Error: No IP ADDRESS")
+
+    #-- CHECK DISK LEVELS:
     diskVariables = ['tmp_usage','root_usage','varlog_usage']
     diskLevels = {key: s[key] for key in s.keys() if key in diskVariables}
     # print(diskLevels)
@@ -46,14 +74,14 @@ def sensorCheck(deployment_id):
         for x in outBounds:
             print(f'Error: {x} value out of bounds - {diskLevels[x]}')
 
-    #--CHECK MIC CONNECTIVITY:
+    #-- CHECK MIC CONNECTIVITY:
     if s['mic_connected'] == 1:
         print('GOOD || Mic: connected')
     else:
         print(f"mic bad {s['mic_connected']}")
 
-    #--CHECK LAEQ LEVELS:
-    if s['laeq'] > 45 and s['laeq'] < 60:
+    #-- CHECK LAEQ LEVELS:
+    if s['laeq'] > 40 and s['laeq'] < 60:
         print(f"GOOD || LAeq levels -  {s['laeq']}")
     else:
         print(f"Error: laeq levels out of bounds - {s['laeq']}")
