@@ -1,8 +1,5 @@
-## TODO: package as 2 classes, deployment and sensordetails
-
 import sys
-# adding sonycctl to system path
-sys.path.insert(0, '~/Documents/sonyc/sonycctl')
+sys.path.insert(0, '~/Documents/sonyc/sonycctl') # adding sonycctl to system path
 import sonycctl
 import numpy as np
 import pprint
