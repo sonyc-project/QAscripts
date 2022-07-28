@@ -34,26 +34,24 @@ class SensorHealth:
         deploymentInfo = api.status(self.deploymentID, start='now-30s')
         self.deployStatus = deploymentInfo[-1]
     def checkCellUp(self):
+        #-- CHECK CELL USB CONNECTION:
         if self.deployStatus['cell_connected'] and self.deployStatus['ppp0_ip']:
             print(f"GOOD || Cell Hat USB connected & online")
         elif self.deployStatus['cell_connected'] and not self.deployStatus['ppp0_ip']:
             print(f"Error: Cell Hat USB connection detected, but no cell internet connection, is there a sim card?")
         else:
             print(f"Error: Cell Hat USB not connected")
-
         #-- CHECK CELL_STRENGTH:
         if np.abs(self.deployStatus['cell_strength']) > 85:
             print(f"GOOD || CELL STRENGTH: {np.abs(self.deployStatus['cell_strength'])}%")
         else:
             print(f"Error: Bad cell strength {np.abs(self.deployStatus['cell_strength'])}%")
 
-        # pass
     def checkIP(self):
         if self.deployStatus['wlan0_ip']:
             print(f"GOOD || IP ADDRESS: {self.deployStatus['wlan0_ip']}")
         else:
             print(f"Error: No IP ADDRESS")
-        # pass
     def checkDiskUsage(self):
         diskVariables = ['tmp_usage','root_usage','varlog_usage']
         diskLevels = {key: self.deployStatus[key] for key in self.deployStatus.keys() if key in diskVariables}
@@ -67,12 +65,16 @@ class SensorHealth:
         else:
             for x in outBounds:
                 print(f'Error: {x} value out of bounds - {diskLevels[x]}')
-        # pass
     def checkMicUp(self):
-        if self.deployStatus['mic_connected'] == 1:
+        if self.deployStatus['mic_connected'] == 1: #usb connection
             print('GOOD || Mic: connected')
         else:
             print(f"mic bad {self.deployStatus['mic_connected']}")
+
+        if self.deployStatus['mic_nonzero']:
+            print(f"GOOD || Mic_nonzero-  {self.deployStatus['mic_nonzero']}")
+        else:
+            print(f"Error: Mic_nonzero - {self.deployStatus['mic_nonzero']}")
 
         #-- CHECK LAEQ LEVELS:
         if self.deployStatus['laeq'] > 40 and self.deployStatus['laeq'] < 60:
@@ -80,7 +82,6 @@ class SensorHealth:
         else:
             print(f"Error: laeq levels out of bounds - {self.deployStatus['laeq']}")
 
-        # pass
     def checkAll(self):
         print(f'---------------- Checking all sensor [{self.deploymentID}] statuses... ----------------')
         print("==============\nChecking CELL STATUS...\n==============")
@@ -117,21 +118,26 @@ class DeploymentHealth:
                 print(f'ERROR: no value for - {error}')
                 # raise KeyError(f'ERROR: no value for - {error}')
 
-testid_deploy = DeploymentHealth(deploy_id) 
-testid_deploy.checkValues()
+# testid_deploy = DeploymentHealth(deploy_id) 
+# testid_deploy.checkValues()
 
 """
-|| check audio data
+|| check audio data - #check that it's uploading files
 """
-# api.fs('audio', deploy_id)
+def grabFiles(deploy_id):
+    # api.fs('audio', deploy_id)
+    x = api.fs('audio', deploy_id, start='now-5m', end='now', latest=True, meta=True)
+    print(x['timeago'])
+    y = api.fs('embeddings', deploy_id, start='now-5m', end='now', latest=True, meta=True)
+    print(y['timeago'])
+    z = api.fs('spl', deploy_id, start='now-5m', end='now', latest=True, meta=True)
+    print(y['timeago'])
+    # for data in api.fs('audio', deploy_id, start='now-5m', end='now'):
+    #     print(data['id'])
+        # api.f(data['id'])
+
+grabFiles(deploy_id)
 
 
-# for data in api.fs('audio', deploy_id, start='now-5m', end='now'):
-#     print(data['id'])
-#     api.f(data['id'])
-    
-# # sonycctl fs ml deploy-qwywf8 --start "2022-06-26T13:00:00" --end "2022-06-26T15:00:00"
-
-# # sonycctl deploy info $DEPLOYID 
 
 
