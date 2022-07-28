@@ -125,16 +125,15 @@ class DeploymentHealth:
 || check audio data - #check that it's uploading files
 """
 def grabFiles(deploy_id):
-    # api.fs('audio', deploy_id)
     x = api.fs('audio', deploy_id, start='now-5m', end='now', latest=True, meta=True)
-    print(x['timeago'])
+    print(f'|| AUDIO\nLast Upload: {x["time"]}\nNext Upload: {x["timeago"]}')
+
     y = api.fs('embeddings', deploy_id, start='now-5m', end='now', latest=True, meta=True)
-    print(y['timeago'])
+    print(f'|| EMBEDDINGS\nLast Upload: {y["time"]}\nNext Upload: {y["timeago"]}')
+
     z = api.fs('spl', deploy_id, start='now-5m', end='now', latest=True, meta=True)
-    print(y['timeago'])
-    # for data in api.fs('audio', deploy_id, start='now-5m', end='now'):
-    #     print(data['id'])
-        # api.f(data['id'])
+    print(f'|| SPL\nLast Upload: {z["time"]}\nNext Upload: {z["timeago"]}')
+
 
 grabFiles(deploy_id)
 
