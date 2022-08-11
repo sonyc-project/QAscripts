@@ -7,9 +7,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 """
 || choosing sensor
-    - will want to be able to use fqdn instead of deployment_id
+    - will want to be able to use ttp/fqdn instead of deployment_id
 """
-deploy_id = 'deploy-rd4arw' #Input("Enter deployment id...")
+deploy_id = Input("Enter deployment id...") #test with deploy-rd4arw
 
 """
 || tapping into sonycctl API
